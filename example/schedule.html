@@ -1,0 +1,119 @@
+<html>
+  <head>
+    <title>JSchedule Example</title>
+    <style type="text/css">
+      body {
+        color: white;
+        background-color: rgb(51, 51, 51);
+        font-family: sans-serif;
+      }
+
+      #la1-video-player {
+        border-radius: 20px;
+        overflow: hidden;
+        flex-grow: 10;
+        min-width: 200px;
+        border-collapse: separate;
+        will-change: transform;
+        margin: 5px;
+      }
+  
+      .containerChat {
+        flex-grow: 1;
+        min-height: 401px;
+        border-radius: 20px;
+        border-collapse: separate;
+        overflow: hidden;
+        margin: 5px;
+      }
+  
+      .containerChat > iframe {
+        min-width: 100%;
+        height: 100%;
+      }
+  
+      .riversschedule {
+        background-color: black;
+        padding: 5px;
+        display: flex;
+        flex-wrap: wrap;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>JSchedule Example</h1>
+    <!-- Schedule examples -->
+    <div class="riversschedule"
+      data-show="2020-05-05T05:05:05"
+      data-hide="2020-05-06T05:05:05"
+      ><h1>Once Off</h1>
+    </div>
+    <div class="riversschedule"
+      data-show="Sunday|05:05:05"
+      data-hide="Sunday|06:05:05"
+      ><h1>Recurring Single</h1>
+    </div>
+    <div class="riversschedule"
+      data-show-hide="Monday,Tuesday,Thursday,Friday|05:05-06:00,08:00-09:00"
+      ><h1>Recurring Multiple</h1>
+    </div>
+    <!-- Not sure if will implement this. The above should suffice.
+      <div class="riversschedule"
+      data-show-hide="Monday-Tuesday|05:05-06:00,08:00-09:00"
+      ><h1>Recurring Multiple Range</h1>
+    </div> -->
+
+    <!-- 
+      NOTE: data-timezone is optional. Defaults to +02:00.
+      EG: data-timezone="+02:00"
+     -->
+
+    <!-- video insertion examples -->
+    <!-- video div insert -->
+    <div class="riversschedule"
+      data-embed-id="cd01cdaf-1846-4100-858c-78e413ab6798"
+    ></div>
+
+    <!-- video iframe insert -->
+    <div class="riversschedule"
+      data-video-url="https://control.livingasone.com/webplayer/video.html?iframe=true&id=d9571600-3752-408e-8172-abfe3224730a"
+    ></div>
+
+    <!-- chat insertion examples -->
+    <!-- chat div insert -->
+    <div class="riversschedule"
+      data-chat-publisher="rivers-church-staging"
+      data-chat-room="rivers-church-staging-global"
+    ></div>
+
+    <!-- chat iframe insert -->
+    <div class="riversschedule"
+      data-chat-url="https://go.arena.im/embed/chat/rivers-church/2mfe"
+    ></div>
+
+    <!-- countdown clock insertion example -->
+    <div class="riversschedule"
+      style="color: white;"
+      data-clockend="10:00">
+      <h4>Time till next service</h4>
+    </div>
+
+    <!-- combination of multiple inserts -->
+    <!-- video div + chat div -->
+    <div class="riversschedule"
+      data-embed-id="cd01cdaf-1846-4100-858c-78e413ab6798"
+      data-chat-publisher="rivers-church-staging"
+      data-chat-room="rivers-church-staging-global"
+    ></div>
+
+    <!-- video iframe + chat iframe -->
+    <div class="riversschedule"
+      data-video-url="https://control.livingasone.com/webplayer/video.html?iframe=true&id=d9571600-3752-408e-8172-abfe3224730a"
+      data-chat-url="https://go.arena.im/embed/chat/rivers-church/2mfe"
+    ></div>
+
+    <!-- <script src="dist/schedule_test.js"></script> -->
+    <!-- <script src="../dist/jschedule.bundle.js"></script> -->
+    <script type="module" src="../lib/index.js"></script>
+  </body>
+</html>

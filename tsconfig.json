@@ -1,0 +1,27 @@
+{
+  // tsconfig.json reference: typescriptlang.org/v2/en/tsconfig
+  // "files": ["src/schedule.ts"],
+  // "include": ["src/*", "test/schedule_test.ts"],
+  "include": ["src/*"],
+  "compilerOptions": {
+    // "target": "ES3",
+    // "target": "ES5",
+    "module": "es6",
+    "target": "ESNext",
+    "sourceMap": true,
+    "declaration": true,
+    "outDir": "lib",
+    "strict": true,
+    // "watch": true,
+    "removeComments": true,
+    // Linting rules:
+    "allowSyntheticDefaultImports": true,
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noImplicitAny": true,
+    "noFallthroughCasesInSwitch": true,
+  },
+}

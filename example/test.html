@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Schedule Test</title>
+</head>
+<body>
+  <dialog id="diagReport">
+    <div style="display: grid;">
+      <h3>Stream Schedule Report:</h3>
+      <p class="dialogCampus">Campus: </p>
+      <p class="dialogShowDays">Show Days: </p>
+      <p class="dialogSchedule">Schedule: </p>
+      <p class="dialogTimezone">Timezone: </p>
+      <p class="dialogImage">Image: </p>
+    </div>
+    <menu>
+      <button value="cancel">Done</button>
+    </menu>
+  </dialog>
+  <dialog id="diagTestData">
+    <form method="dialog" style="display: grid;">
+      <label id="lblDCampus">Campus: </label>
+      <label for="selDDay" id="lblDDay">Show Day: </label>
+      <select name="day" id="selDDay">
+        <option value="Sunday">Sunday</option>
+        <option value="Monday">Monday</option>
+        <option value="Tuesday">Tuesday</option>
+        <option value="Wednesday">Wednesday</option>
+        <option value="Thursday">Thursday</option>
+        <option value="Thursday">Thursday</option>
+        <option value="Saturday">Saturday</option>
+      </select>
+      <label for="txtDImgSrc">Image source: </label>
+      <input id="txtDImgSrc" type="text">
+      <label for="txtDTimezone" id="lblDTimezone">Timezone: </label>
+      <input type="text" id="txtDTimezone">
+      <label for="txtDShowTimes" id="lblDShowTimes">Show Times: </label>
+      <input type="text" id="txtDShowTimes">
+      <menu>
+        <button value="cancel">Cancel</button>
+        <button id="btnDTest" value="default">Test</button>
+      </menu>
+    </form>
+  </dialog>
+</body>
+</html>
