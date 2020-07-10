@@ -32,7 +32,7 @@
   },
   "homepage": "https://github.com/17xande/ts-schedule#readme",
   "dependencies": {
-    "moment-timezone": "^0.5.31"
+    "moment": "*"
   },
   "devDependencies": {
     "@babel/cli": "^7.10.3",
@@ -41,8 +41,6 @@
     "@babel/preset-env": "^7.10.3",
     "@babel/preset-typescript": "^7.10.1",
     "babel-loader": "^8.1.0",
-    "typescript": "^3.9.5",
-    "webpack": "^4.43.0",
-    "webpack-cli": "^3.3.12"
+    "typescript": "^3.9.5"
   }
 }

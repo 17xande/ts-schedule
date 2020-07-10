@@ -1,12 +1,13 @@
 // Author: Alexandre Figueiredo
 // Source: github.com/17xande/JSchedule
 
-import * as moment from 'moment-timezone';
+// /// <reference path="../node_modules/moment/moment.d.ts"/>
+import moment from '../node_modules/moment/moment.js';
 
 // Scheduler defines all the functionality of this program.
 interface Scheduler {
   readonly version: string;
-  readonly endOfTime: Date;
+  readonly endOfTime: moment.Moment;
   debug: boolean;
   logging: boolean;
   selector: string;
@@ -18,9 +19,7 @@ interface Scheduler {
   stop(): void;
   getContainers(selector: string): Container[];
   getScheduleType(container: Container): string;
-  getDates(container: Container): Container;
-  getNextShow(container: Container): Date;
-  getNextHide(container: Container): Date;
+  getNextTime(container: Container, sh: string): moment.Moment;
   showHide(container: Container): void;
   clockCalc(container: Container): string;
   timeLoop(containers: Container[]): void;
@@ -44,12 +43,14 @@ interface Container {
     hide: string
     showHide: string
     timezone: string
+    nextShow: moment.Moment
+    nextHide: moment.Moment
   }
 }
 
-const scheduler: Scheduler = {
-  version: "0.4.1",
-  endOfTime: new Date(8640000000000000),
+export const scheduler: Scheduler = {
+  version: "0.4.0",
+  endOfTime: moment(8640000000000000),
   debug: true,
   logging: true,
   selector: 'div.riversschedule',
@@ -62,9 +63,9 @@ const scheduler: Scheduler = {
     if (scheduler.debug) scheduler.logging = true;
     // stop previous timeLoop, if there is one running;
     scheduler.stop();
-    const containers = scheduler.getContainers(scheduler.selector);
-    containers.forEach(container => scheduler.showHide(container));
-    scheduler.timeLoop(containers);
+    scheduler.containers = scheduler.getContainers(scheduler.selector);
+    scheduler.containers.forEach(container => scheduler.showHide(container));
+    scheduler.timeLoop(scheduler.containers);
   },
 
   // stop cancels the loops in timers. Mostly used if the loops need to be restarted.
@@ -96,13 +97,16 @@ const scheduler: Scheduler = {
           show: div.dataset.show ?? '',
           hide: div.dataset.hide ?? '',
           showHide: div.dataset.showHide ?? '',
-          timezone: div.dataset.timezone ?? 'Africa/Johannesburg'
+          timezone: div.dataset.timezone ?? '+02:00', // Default to +02:00 timezone.
+          nextShow: moment(),
+          nextHide: moment(),
         },
       };
 
-      container.schedule.type = scheduler.getScheduleType(container)
 
-      container = scheduler.getDates(container);
+      container.schedule.type = scheduler.getScheduleType(container);
+      container.schedule.nextShow = scheduler.getNextTime(container, 'show');
+      container.schedule.nextHide = scheduler.getNextTime(container, 'hide');
       containers.push(container);
     }
     
@@ -112,11 +116,8 @@ const scheduler: Scheduler = {
 
   // getScheduleType returns the schedule type based on the other properties of the schedule.
   getScheduleType(container) {
-    const inv = 'Invalid Date';
-    const showDate = new Date(container.schedule.show);
-    const hideDate = new Date(container.schedule.hide);
-
-    let scheduleType = 'invalid';
+    const showDate = moment(container.schedule.show);
+    const hideDate = moment(container.schedule.hide);
 
     // First we need to figure out what type of date strings we'll be working with.
     if (container.schedule.showHide) {
@@ -124,7 +125,7 @@ const scheduler: Scheduler = {
       container.schedule.type = 'recurringMultipleRange';
     } else if (container.schedule.show || container.schedule.hide) {
       // This means it's either 'recurringSingle' or 'onceOff'
-      if (showDate.toString() == inv && hideDate.toString() == inv) {
+      if (!showDate.isValid() && !hideDate.isValid()) {
         // If both the show and hide are invalid dates, then it's a recurringSingle type.
         container.schedule.type = 'recurringSingle';
       } else {
@@ -133,159 +134,187 @@ const scheduler: Scheduler = {
       }
     } else {
       // Otherwise the schedule in this div is invalid.
-      scheduleType = 'invalid';
+      container.schedule.type = 'invalid';
 
       if (scheduler.logging) {
         console.warn("Invalid schedule:\n", container.div);
       }
     }
 
-    return scheduleType;
+    return container.schedule.type;
   },
 
-  // getNextShow returns the date of the next show.
-  getNextShow(container) {
-    const inv = 'Invalid Date';
-    const now = new Date();
-    const day = scheduler.padZero(now.getDate());
-    const month = scheduler.padZero(now.getMonth() + 1);
-    const year = now.getFullYear();
+  // getNextTime encapsulates the common logic of getNextShow() and getNextHide().
+  getNextTime(container, sh) {
+    const now = moment();
     const showHide = container.schedule.showHide.split('|');
 
-    let show = new Date();
-    let mShow: moment.Moment;
+    let t = now.clone();
 
     switch (container.schedule.type) {
       case 'onceOff':
-        show = new Date(container.schedule.show);
-        mShow = moment.tz(container.schedule.show, container.schedule.timezone);
-        console.log(mShow);
-
-        // Use default show value if it's missing or invalid.
-        if (show.toString() === inv) {
-          show = new Date(0);
+        if (sh === 'show') {
+          t = moment(container.schedule.show);
+          
+          // Use default value if it's missing or invalid.
+          if (!t.isValid()) {
+            t = moment(0);
+          }
+        } else {
+          t = moment(container.schedule.hide);
+          
+          // Use default value if it's missing or invalid.
+          if (!t.isValid()) {
+            t = scheduler.endOfTime;
+          }
         }
         break;
 
       case 'recurringSingle':
-        const arrShow = container.schedule.show.split('|');
-        // const time = arrShow[1];
+        let arrSH: string[];
+        if (sh === "show") {
+          arrSH = container.schedule.show.split('|');
+        } else {
+          arrSH = container.schedule.hide.split('|');
+        }
+
+        const time = arrSH[1].split(':');
         // Get the index of the day in the show attribute.
-        let dayIndex = scheduler.days.indexOf(arrShow[0]);
+        let dayIndex = scheduler.days.indexOf(arrSH[0]);
         if (dayIndex === -1) {
           // If it's an invalid day, set the default to today.
-          dayIndex = now.getDay();
+          dayIndex = now.day();
           if (scheduler.logging) {
-            console.warn(`Invalid day in 'show' attribute:\n${container.div}`);
+            console.warn(`Invalid day in 'show' attribute:\n`, container.div);
           }
         }
 
         // Find how many days till the next day that was specified.
-        const daysAdded = (dayIndex + (7 - now.getDay())) % 7;
+        const daysAdded = (dayIndex + 7 - now.day()) % 7;
         // Add those days to the show date.
-        show.setDate(daysAdded);
-        // Create a completely new date based on a date string.
-        // We have to keep recreating the date like this (from a string template) for one reason:
-        // It's the only way that I know of to make sure that the right timezone is used.
-        // Otherwise it will default to the timezone of the browser...
-        // Because JavaScript dates are from the devil.
-        // const dateString = `${year}-${month}-${day}T${time}${container.schedule.timezone}`;
-
-
+        t.add(daysAdded, 'days');
+        t.hours(parseInt(time[0], 10));
+        t.minutes(parseInt(time[1], 10));
+        t.seconds(parseInt(time[2], 10));
+        
+        // If it's today, but past the time, add a week to the moment.
+        if (daysAdded === 0 && now.isAfter(t)) {
+          t.add(7, 'days');
+        }
         break;
 
       case 'recurringMultipleRange':
-        // const days = showHide[0].split(',');
-        const timeSlots = showHide[1].split(',');
+        const daysStr = showHide[0].split(',');
+        const timesStr = showHide[1].split(',');
 
-        for (let i = 0; i < timeSlots.length; i++) {
-          // Get the show time for this slot.
-          const time = timeSlots[i].split('-')[0];
-          // Build a date string with today's date.
-          const dateString = `${year}-${month}-${day}T${time}${container.schedule.timezone}`;
-          show = new Date(dateString);
+        // Store the index of each day in an array and sort it.
+        let daysArr = daysStr.map(day => scheduler.days.indexOf(day)).sort();
+        if (daysArr[0] === -1) {
+          if (scheduler.logging) {
+            console.warn(`Invalid day in 'show-hide' attribute:\n`, container.div);
+          }
+          break;
+        }
+
+        // Store the showtimes of each time slot. Would a sort() work here?
+        let i = 0;
+        if (sh === 'hide') i = 1;
+        let timesArr = timesStr.map(times => times.split('-')[i]);
+
+        // Store the distance of each day from today, and sort it.
+        let dist = daysArr.map(e => (e + 7 + now.day()) % 7).sort();
+
+        if (dist[0] !== 0) {
+          // If today is not one of the days to show.
+          // Add the number of days till the next show day.
+          t.add(dist[0], 'days');
+          const time = timesArr[0].split(':');
+          // Set the time to the first time of the day.
+          t.hour(parseInt(time[0], 10));
+          t.minute(parseInt(time[1], 10));
+          t.second(0);
+        } else {
+          // If today is one of the days, find the next time.
+          for (let i = 0; i < timesArr.length; i++) {
+            const ti = timesArr[i].split(':');
+            let d = now.clone();
+            d.hour(parseInt(ti[0], 10));
+            d.minute(parseInt(ti[1], 10));
+            
+            if (d.isAfter(now)) {
+              t.hour(d.hour()).minute(d.minute()).second(0);
+              break;
+            }
+
+            if (i === timesArr.length - 1) {
+              // If we're on the last iteration of this loop, it means that
+              // we're past the last slot for today, so we have to use the first slot of the next day.
+              // Add the number of days till the next show day.
+              t.add(dist[1], 'days');
+              const time = timesArr[0].split(':');
+              // Set the time to the first time of the day.
+              t.hour(parseInt(time[0], 10));
+              t.minute(parseInt(time[1], 10));
+              t.second(0);
+            }
+          }
         }
 
         break;
+
+      default:
+        if (scheduler.logging) {
+          console.warn(`Invalid schedule type:\n`, container.div);
+        }
+        break;
     }
 
-    return show;
+    // Set the timezone/offset.
+    t.utcOffset(container.schedule.timezone);
+    return t;
   },
 
-  // getNextHide returns the date of the next hide.
-  getNextHide(container) {
-    let hide = new Date(container.schedule.hide);
+  // showHide shows or hides the containers. It also inserts and removes additional
+  // elements like iFrames if necessary.
+  showHide(container) {
+    // Ignore invalid containers.
+    if (container.schedule.type === 'invalid') return;
+    // Ignore clock type containers. They're doing their thing somewhere else.
+    if (container.div.dataset.clock) return;
+    const now = moment();
 
-    return hide;
-  },
+    if (now.isBetween(container.schedule.nextShow, container.schedule.nextHide)) {
+      // This container should be shown at this time.
+      // If the container is already showing, just move on.
+      if (!container.div.classList.contains('hidden')) return;
 
-  // getDate parses the times supplied and returns the full `show` and `hide` dates.
-  getDates(container) {
-    const timezone = container.div.dataset.timezone || "+02:00";
-    let now = new Date();
-    const month = scheduler.padZero(now.getMonth() + 1);
-    const day = scheduler.padZero(now.getDate());
-
-    let schedule = '';
-    let days: string[];
-
+      if (scheduler.logging) console.log(`showing container.`);
+      container.div.classList.remove('hidden');
+      if (container.hasVideo) {
+        scheduler.insertVideo(container.div);
+      }
+      if (container.hasChat) {
+        scheduler.insertChat(container.div);
+      }
       
-    // let di = scheduler.days.indexOf(day);
-    // if (di === -1) di = 0;
-
-    // If we're past the last show schedule, add a week to the date.
-    // now.setDate(now.getDate() + (di + (7 - now.getDay())) % 7);
-    const timeSlots = schedule.split(',');
-    if (new Date() > parseDate(timeSlots[timeSlots.length - 1]).hide) {
-      now = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+      return;
     }
     
-    // container.schedule = timeSlots.map(parseDate);    
-
-    function parseDate(timeSlots: string) {
-      const times = timeSlots.split('-');
-      const date = `${now.getFullYear()}-${month}-${day}T`;
-      const show = `${date}${times[0]}:00${timezone}`;
-      const hide = `${date}${times[1]}:00${timezone}`;
-
-      return {
-        show: new Date(show),
-        hide: new Date(hide),
-        days: days
-      }
-    };
-
-    return container;
-  },
-
-  // showHide sets the `hidden` attribute of the containers
-  // based on their schedules.
-  showHide(container) {
-    if (container.div.dataset.clock) return;
-    // const now = new Date();
-    // for (let i = 0; i < container.schedule.length; i++) {
-    //   const time = container.schedule[i];
-    //   if (now > time.show && now < time.hide) {
-    //     if (!container.div.classList.contains('hidden')) return;
-    //     if (scheduler.logging) console.log(`showing container.`);
-    //     container.div.classList.remove('hidden');
-    //     if (container.hasVideo) {
-    //       scheduler.insertVideo(container.div);
-    //     }
-    //     if (container.hasChat) {
-    //       scheduler.insertChat(container.div);
-    //     }
-    //     return;
-    //   }
-    // }
-
+    // This container should be hidden at this time.
+    // If the container is already hidden, just move on
     if (container.div.classList.contains('hidden')) return;
+    
     if (scheduler.logging) console.log(`hiding container.`);
     container.div.classList.add('hidden');
+    // Get the next show and hide times.
+    container.schedule.nextShow = scheduler.getNextTime(container, 'show');
+    container.schedule.nextHide = scheduler.getNextTime(container, 'hide');
     if (container.hasVideo || container.hasChat) {
+      // Clear out the contents of the container.
+      // Not sure if this is the best approach, but it works for now.
       container.div.innerHTML = "";
       // This is assuming that there will ever only be one video and one chat per page.
-      window.removeEventListener('resize', scheduler.vidResize);
+      // window.removeEventListener('resize', scheduler.vidResize);
     }
   },
 
@@ -415,3 +444,6 @@ const scheduler: Scheduler = {
 };
 
 scheduler.start();
+
+// @ts-ignore
+window.scheduler = scheduler;

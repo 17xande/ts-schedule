@@ -1,6 +1,6 @@
 <html>
   <head>
-    <title>JSchedule Example</title>
+    <title>ts-schedule Example</title>
     <style type="text/css">
       body {
         color: white;
@@ -38,56 +38,63 @@
         display: flex;
         flex-wrap: wrap;
       }
+
+      .hidden {
+        display: none;
+      }
     </style>
   </head>
   <body>
-    <h1>JSchedule Example</h1>
-    <!-- Schedule examples -->
+    <h1>ts-schedule Example</h1>
+    <!-- Basic schedule examples -->
     <div class="riversschedule"
-      data-show="2020-05-05T05:05:05"
-      data-hide="2020-05-06T05:05:05"
+      data-show="2020-07-10T17:53:00"
+      data-hide="2020-07-10T17:53:30"
       ><h1>Once Off</h1>
     </div>
     <div class="riversschedule"
-      data-show="Sunday|05:05:05"
-      data-hide="Sunday|06:05:05"
+      data-show="Friday|18:08:00"
+      data-hide="Friday|18:12:30"
       ><h1>Recurring Single</h1>
     </div>
     <div class="riversschedule"
-      data-show-hide="Monday,Tuesday,Thursday,Friday|05:05-06:00,08:00-09:00"
+      data-show-hide="Monday,Tuesday,Thursday|17:40-17:41,17:42-17:43,17:44-17:45,17:46-17:47,17:48-17:49"
       ><h1>Recurring Multiple</h1>
     </div>
-    <!-- Not sure if will implement this. The above should suffice.
-      <div class="riversschedule"
-      data-show-hide="Monday-Tuesday|05:05-06:00,08:00-09:00"
-      ><h1>Recurring Multiple Range</h1>
-    </div> -->
 
     <!-- 
-      NOTE: data-timezone is optional. Defaults to +02:00.
+      NOTE: data-timezone attribute is optional. Defaults to +02:00.
       EG: data-timezone="+02:00"
      -->
 
     <!-- video insertion examples -->
     <!-- video div insert -->
     <div class="riversschedule"
+      data-show="Friday|01:00:00"
+      data-hide="Saturday|20:00:00"
       data-embed-id="cd01cdaf-1846-4100-858c-78e413ab6798"
     ></div>
 
     <!-- video iframe insert -->
     <div class="riversschedule"
+    data-show="Friday|01:00:00"
+      data-hide="Saturday|20:00:00"
       data-video-url="https://control.livingasone.com/webplayer/video.html?iframe=true&id=d9571600-3752-408e-8172-abfe3224730a"
     ></div>
 
     <!-- chat insertion examples -->
     <!-- chat div insert -->
     <div class="riversschedule"
+      data-show="Friday|01:00:00"
+      data-hide="Saturday|20:00:00"
       data-chat-publisher="rivers-church-staging"
       data-chat-room="rivers-church-staging-global"
     ></div>
 
     <!-- chat iframe insert -->
     <div class="riversschedule"
+      data-show="Friday|01:00:00"
+      data-hide="Saturday|20:00:00"
       data-chat-url="https://go.arena.im/embed/chat/rivers-church/2mfe"
     ></div>
 
@@ -114,6 +121,9 @@
 
     <!-- <script src="dist/schedule_test.js"></script> -->
     <!-- <script src="../dist/jschedule.bundle.js"></script> -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.27.0/moment.min.js"></script>
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.31/moment-timezone.min.js"></script> -->
     <script type="module" src="../lib/index.js"></script>
+    <!-- <script src="../lib/index.js"></script> -->
   </body>
 </html>
