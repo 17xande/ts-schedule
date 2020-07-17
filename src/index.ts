@@ -19,7 +19,8 @@ interface Scheduler {
   stop(): void;
   getContainers(selector: string): Container[];
   getScheduleType(container: Container): string;
-  getNextTime(container: Container, sh: string): moment.Moment;
+  getNextTime(container: Container): { show: moment.Moment, hide: moment.Moment };
+  getDayDifference(day: string) : number;
   showHide(container: Container): void;
   clockCalc(container: Container): string;
   timeLoop(containers: Container[]): void;
@@ -43,8 +44,7 @@ interface Container {
     hide: string
     showHide: string
     timezone: string
-    nextShow: moment.Moment
-    nextHide: moment.Moment
+    next: { show: moment.Moment, hide: moment.Moment }
   }
 }
 
@@ -87,26 +87,27 @@ export const scheduler: Scheduler = {
     for (let i = 0; i < divs.length; i++) {
       const div = <HTMLDivElement>divs[i];
       const chatUrl = div.dataset.chatUrl ?? '';
+      const chatRoom = div.dataset.chatRoom ?? '';
+      const videoUrl = div.dataset.videoUrl ?? '';
       
       let container: Container = {
         div: div,
-        hasVideo: div.dataset.embedId?.length === 36,
-        hasChat: chatUrl.length > 5,
+        hasVideo: div.dataset.embedId?.length === 36 || videoUrl != '',
+        hasChat: chatUrl != '' || chatRoom != '',
         schedule: {
           type: '',
           show: div.dataset.show ?? '',
           hide: div.dataset.hide ?? '',
           showHide: div.dataset.showHide ?? '',
           timezone: div.dataset.timezone ?? '+02:00', // Default to +02:00 timezone.
-          nextShow: moment(),
-          nextHide: moment(),
+          next: { show: moment(0), hide: moment(scheduler.endOfTime) }
         },
       };
 
 
       container.schedule.type = scheduler.getScheduleType(container);
-      container.schedule.nextShow = scheduler.getNextTime(container, 'show');
-      container.schedule.nextHide = scheduler.getNextTime(container, 'hide');
+      let sh = scheduler.getNextTime(container);
+      container.schedule.next = sh;
       containers.push(container);
     }
     
@@ -144,62 +145,60 @@ export const scheduler: Scheduler = {
     return container.schedule.type;
   },
 
-  // getNextTime encapsulates the common logic of getNextShow() and getNextHide().
-  getNextTime(container, sh) {
+  // getNextTime gets the next show and hide times.
+  getNextTime(container) {
     const now = moment();
     const showHide = container.schedule.showHide.split('|');
 
-    let t = now.clone();
+    let ts = now.clone();
+    let th = now.clone();
 
     switch (container.schedule.type) {
       case 'onceOff':
-        if (sh === 'show') {
-          t = moment(container.schedule.show);
+          ts = moment(container.schedule.show);
           
           // Use default value if it's missing or invalid.
-          if (!t.isValid()) {
-            t = moment(0);
+          if (!ts.isValid()) {
+            ts = moment(0);
           }
-        } else {
-          t = moment(container.schedule.hide);
+        
+          th = moment(container.schedule.hide);
           
           // Use default value if it's missing or invalid.
-          if (!t.isValid()) {
-            t = scheduler.endOfTime;
+          if (!th.isValid()) {
+            th = scheduler.endOfTime;
           }
-        }
+        
         break;
 
       case 'recurringSingle':
-        let arrSH: string[];
-        if (sh === "show") {
-          arrSH = container.schedule.show.split('|');
-        } else {
-          arrSH = container.schedule.hide.split('|');
-        }
+        const arrS = container.schedule.show.split('|');
+        const arrH = container.schedule.hide.split('|');
+        const timeS = arrS[1].split(':');
+        const timeH = arrH[1].split(':');
 
-        const time = arrSH[1].split(':');
-        // Get the index of the day in the show attribute.
-        let dayIndex = scheduler.days.indexOf(arrSH[0]);
-        if (dayIndex === -1) {
-          // If it's an invalid day, set the default to today.
-          dayIndex = now.day();
-          if (scheduler.logging) {
-            console.warn(`Invalid day in 'show' attribute:\n`, container.div);
-          }
-        }
-
-        // Find how many days till the next day that was specified.
-        const daysAdded = (dayIndex + 7 - now.day()) % 7;
+        // Find how many days till the next show day that was specified.
+        let daysAdded = this.getDayDifference(arrS[0]);
         // Add those days to the show date.
-        t.add(daysAdded, 'days');
-        t.hours(parseInt(time[0], 10));
-        t.minutes(parseInt(time[1], 10));
-        t.seconds(parseInt(time[2], 10));
+        ts.add(daysAdded, 'days');
+        // Set the time of the show date.
+        ts.hours(parseInt(timeS[0], 10));
+        ts.minutes(parseInt(timeS[1], 10));
+        ts.seconds(parseInt(timeS[2], 10));
         
-        // If it's today, but past the time, add a week to the moment.
-        if (daysAdded === 0 && now.isAfter(t)) {
-          t.add(7, 'days');
+        // Do the same for the hide day.
+        daysAdded = this.getDayDifference(arrH[0]);
+        // Add those days to the show date.
+        th.add(daysAdded, 'days');
+        // Set the time of the show date.
+        th.hours(parseInt(timeH[0], 10));
+        th.minutes(parseInt(timeH[1], 10));
+        th.seconds(parseInt(timeH[2], 10));
+        
+        // If it's today, but past the hide time, add a week to the moment.
+        if (daysAdded === 0 && now.isAfter(th)) {
+          ts.add(7, 'days');
+          th.add(7, 'days');
         }
         break;
 
@@ -207,55 +206,56 @@ export const scheduler: Scheduler = {
         const daysStr = showHide[0].split(',');
         const timesStr = showHide[1].split(',');
 
-        // Store the index of each day in an array and sort it.
-        let daysArr = daysStr.map(day => scheduler.days.indexOf(day)).sort();
-        if (daysArr[0] === -1) {
-          if (scheduler.logging) {
-            console.warn(`Invalid day in 'show-hide' attribute:\n`, container.div);
-          }
-          break;
-        }
-
-        // Store the showtimes of each time slot. Would a sort() work here?
-        let i = 0;
-        if (sh === 'hide') i = 1;
-        let timesArr = timesStr.map(times => times.split('-')[i]);
-
-        // Store the distance of each day from today, and sort it.
-        let dist = daysArr.map(e => (e + 7 + now.day()) % 7).sort();
+        let dist = daysStr.map(d => scheduler.getDayDifference(d)).sort();
 
         if (dist[0] !== 0) {
           // If today is not one of the days to show.
           // Add the number of days till the next show day.
-          t.add(dist[0], 'days');
-          const time = timesArr[0].split(':');
+          ts.add(dist[0], 'days');
+          th.add(dist[0], 'days');
+          let timesArr = timesStr[0].split('-');
+          let time = timesArr[0].split(':');
           // Set the time to the first time of the day.
-          t.hour(parseInt(time[0], 10));
-          t.minute(parseInt(time[1], 10));
-          t.second(0);
+          ts.hour(parseInt(time[0], 10));
+          ts.minute(parseInt(time[1], 10));
+          ts.second(0);
+
+          // repeat for the hide time.
+          time = timesArr[1].split(':');
+          // Set the time to the first time of the day.
+          th.hour(parseInt(time[0], 10));
+          th.minute(parseInt(time[1], 10));
+          th.second(0);
+
         } else {
-          // If today is one of the days, find the next time.
-          for (let i = 0; i < timesArr.length; i++) {
-            const ti = timesArr[i].split(':');
+          // If today is one of the days, find the next hide time.
+          for (let i = 0; i < timesStr.length; i++) {
+            const ti = timesStr[i].split('-')[1].split(':');
             let d = now.clone();
             d.hour(parseInt(ti[0], 10));
             d.minute(parseInt(ti[1], 10));
             
             if (d.isAfter(now)) {
-              t.hour(d.hour()).minute(d.minute()).second(0);
+              const tih = timesStr[i].split('-')[0].split(':');
+              ts.hour(parseInt(tih[0], 10)).minute(parseInt(tih[1], 10)).second(0);
+              th.hour(d.hour()).minute(d.minute()).second(0);
               break;
             }
 
-            if (i === timesArr.length - 1) {
+            if (i === timesStr.length - 1) {
               // If we're on the last iteration of this loop, it means that
               // we're past the last slot for today, so we have to use the first slot of the next day.
               // Add the number of days till the next show day.
-              t.add(dist[1], 'days');
-              const time = timesArr[0].split(':');
+              ts.add(dist[1], 'days');
+              th.add(dist[1], 'days');
+              const times = timesStr[0].split('-');
               // Set the time to the first time of the day.
-              t.hour(parseInt(time[0], 10));
-              t.minute(parseInt(time[1], 10));
-              t.second(0);
+              ts.hour(parseInt(times[0].split(':')[0], 10));
+              ts.minute(parseInt(times[0].split(':')[1], 10));
+              ts.second(0);
+              th.hour(parseInt(times[1].split(':')[0], 10));
+              th.minute(parseInt(times[1].split(':')[1], 10));
+              th.second(0);
             }
           }
         }
@@ -270,8 +270,28 @@ export const scheduler: Scheduler = {
     }
 
     // Set the timezone/offset.
-    t.utcOffset(container.schedule.timezone);
-    return t;
+    ts.utcOffset(container.schedule.timezone);
+    th.utcOffset(container.schedule.timezone);
+    return { show: ts, hide: th};
+  },
+
+  // getDayDifference returns the length of days till the supplied day.
+  getDayDifference(day) {
+    const now = moment();
+    // Get the index of the day in the show attribute.
+    let dayIndex = scheduler.days.indexOf(day);
+    if (dayIndex === -1) {
+      // If it's an invalid day, set the default to today.
+      dayIndex = now.day();
+      if (scheduler.logging) {
+        console.warn(`Invalid day in 'show' attribute:\n`, day);
+      }
+    }
+
+    // Find how many days till the next day that was specified.
+    const daysAdded = (dayIndex + 7 - now.day()) % 7;
+
+    return daysAdded;
   },
 
   // showHide shows or hides the containers. It also inserts and removes additional
@@ -283,19 +303,20 @@ export const scheduler: Scheduler = {
     if (container.div.dataset.clock) return;
     const now = moment();
 
-    if (now.isBetween(container.schedule.nextShow, container.schedule.nextHide)) {
-      // This container should be shown at this time.
-      // If the container is already showing, just move on.
-      if (!container.div.classList.contains('hidden')) return;
-
-      if (scheduler.logging) console.log(`showing container.`);
-      container.div.classList.remove('hidden');
+    if (now.isBetween(container.schedule.next.show, container.schedule.next.hide)) {
       if (container.hasVideo) {
         scheduler.insertVideo(container.div);
       }
       if (container.hasChat) {
         scheduler.insertChat(container.div);
       }
+
+      // This container should be shown at this time.
+      // If the container is already showing, just move on.
+      if (!container.div.classList.contains('hidden')) return;
+
+      if (scheduler.logging) console.log(`showing container.`);
+      container.div.classList.remove('hidden');
       
       return;
     }
@@ -307,12 +328,12 @@ export const scheduler: Scheduler = {
     if (scheduler.logging) console.log(`hiding container.`);
     container.div.classList.add('hidden');
     // Get the next show and hide times.
-    container.schedule.nextShow = scheduler.getNextTime(container, 'show');
-    container.schedule.nextHide = scheduler.getNextTime(container, 'hide');
+    const sche = scheduler.getNextTime(container);
+    container.schedule.next = { show: sche.show, hide: sche.hide }
     if (container.hasVideo || container.hasChat) {
       // Clear out the contents of the container.
       // Not sure if this is the best approach, but it works for now.
-      container.div.innerHTML = "";
+      container.div.querySelector('.containerVideo')?.remove();
       // This is assuming that there will ever only be one video and one chat per page.
       // window.removeEventListener('resize', scheduler.vidResize);
     }
@@ -389,14 +410,19 @@ export const scheduler: Scheduler = {
     if (videoUrl) {
       template = `<div class="containerVideo"><iframe src="${videoUrl}" scrolling="no" allowfullscreen="true" allow="fullscreen" frameborder="0"></iframe></div>`;
       container.insertAdjacentHTML('afterbegin', template);
-      this.insertScript('https://control.livingasone.com/webplayer/loader.min.js');
     }
     else if (embedID) {
       template = `<div id="la1-video-player" class="containerVideo" data-embed-id="${embedID}"></div>`;
+      container.insertAdjacentHTML('afterbegin', template);
+      scheduler.insertScript('https://control.livingasone.com/webplayer/loader.min.js');
+      
+      // @ts-ignore
+      window.la1InitWebPlayer?.();
     } else {
       console.warn(`invalid video embed parameters.`);
+      return;
     }
-    if (this.logging) console.log(`video inserted.`);
+    if (scheduler.logging) console.log(`video inserted.`);
   },
 
   // insertChat inserts a chat embed code based on the chat URL provided.

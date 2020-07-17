@@ -31,6 +31,11 @@
         min-width: 100%;
         height: 100%;
       }
+
+      .containerVideo > iframe {
+        height: 38vh;
+        width: 80vw;
+      }
   
       .riversschedule {
         background-color: black;
@@ -48,17 +53,17 @@
     <h1>ts-schedule Example</h1>
     <!-- Basic schedule examples -->
     <div class="riversschedule"
-      data-show="2020-07-10T17:53:00"
-      data-hide="2020-07-10T17:53:30"
+      data-show="2020-07-16T10:54:00"
+      data-hide="2020-07-16T10:54:30"
       ><h1>Once Off</h1>
     </div>
     <div class="riversschedule"
-      data-show="Friday|18:08:00"
-      data-hide="Friday|18:12:30"
+      data-show="Thursday|10:54:00"
+      data-hide="Thursday|10:54:30"
       ><h1>Recurring Single</h1>
     </div>
     <div class="riversschedule"
-      data-show-hide="Monday,Tuesday,Thursday|17:40-17:41,17:42-17:43,17:44-17:45,17:46-17:47,17:48-17:49"
+      data-show-hide="Monday,Tuesday,Thursday|11:30-11:31,11:32-11:33,11:34-11:35,11:36-11:37,11:38-11:39"
       ><h1>Recurring Multiple</h1>
     </div>
 
@@ -70,36 +75,36 @@
     <!-- video insertion examples -->
     <!-- video div insert -->
     <div class="riversschedule"
-      data-show="Friday|01:00:00"
-      data-hide="Saturday|20:00:00"
+      data-show-hide="Monday,Tuesday|14:40-14:41,14:42-14:43,14:44-14:45,14:46-14:47,14:48-14:49"
       data-embed-id="cd01cdaf-1846-4100-858c-78e413ab6798"
-    ></div>
+    ><h1>Embed-ID</h1>
+    </div>
 
     <!-- video iframe insert -->
     <div class="riversschedule"
-    data-show="Friday|01:00:00"
-      data-hide="Saturday|20:00:00"
-      data-video-url="https://control.livingasone.com/webplayer/video.html?iframe=true&id=d9571600-3752-408e-8172-abfe3224730a"
-    ></div>
+      data-show-hide="Monday,Tuesday|15:10-15:11,15:12-15:13,15:14-15:15,15:16-15:17,15:18-15:19"
+      data-video-url="https://control.livingasone.com/webplayer/video.html?iframe=true&id=cd01cdaf-1846-4100-858c-78e413ab6798"
+    ><h1>Video-URL</h1>
+    </div>
 
     <!-- chat insertion examples -->
     <!-- chat div insert -->
     <div class="riversschedule"
-      data-show="Friday|01:00:00"
-      data-hide="Saturday|20:00:00"
+    data-show-hide="Monday,Tuesday,Thursday|15:40-15:41,15:42-15:43,15:44-15:45,15:46-15:47,15:48-15:49"
       data-chat-publisher="rivers-church-staging"
       data-chat-room="rivers-church-staging-global"
     ></div>
 
     <!-- chat iframe insert -->
     <div class="riversschedule"
-      data-show="Friday|01:00:00"
-      data-hide="Saturday|20:00:00"
+      data-show-hide="Monday,Tuesday,Thursday|16:10-16:11,16:12-16:13,16:14-16:15,16:16-16:17,16:18-16:19"
       data-chat-url="https://go.arena.im/embed/chat/rivers-church/2mfe"
     ></div>
 
     <!-- countdown clock insertion example -->
     <div class="riversschedule"
+      data-show="Saturday|01:00:00"
+      data-hide="Saturday|20:00:00"
       style="color: white;"
       data-clockend="10:00">
       <h4>Time till next service</h4>
@@ -108,6 +113,7 @@
     <!-- combination of multiple inserts -->
     <!-- video div + chat div -->
     <div class="riversschedule"
+      data-show-hide="Monday,Tuesday,Saturday|16:20-16:21,16:22-16:23,16:24-16:25,16:26-16:27,16:28-16:29"
       data-embed-id="cd01cdaf-1846-4100-858c-78e413ab6798"
       data-chat-publisher="rivers-church-staging"
       data-chat-room="rivers-church-staging-global"
@@ -115,7 +121,8 @@
 
     <!-- video iframe + chat iframe -->
     <div class="riversschedule"
-      data-video-url="https://control.livingasone.com/webplayer/video.html?iframe=true&id=d9571600-3752-408e-8172-abfe3224730a"
+      data-show-hide="Monday,Tuesday,Friday|16:20-16:21,16:22-16:23,16:24-16:25,16:26-16:27,16:28-16:29"
+      data-video-url="https://control.livingasone.com/webplayer/video.html?iframe=true&id=cd01cdaf-1846-4100-858c-78e413ab6798"
       data-chat-url="https://go.arena.im/embed/chat/rivers-church/2mfe"
     ></div>
 

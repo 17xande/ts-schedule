@@ -12,7 +12,11 @@ interface Scheduler {
     stop(): void;
     getContainers(selector: string): Container[];
     getScheduleType(container: Container): string;
-    getNextTime(container: Container, sh: string): moment.Moment;
+    getNextTime(container: Container): {
+        show: moment.Moment;
+        hide: moment.Moment;
+    };
+    getDayDifference(day: string): number;
     showHide(container: Container): void;
     clockCalc(container: Container): string;
     timeLoop(containers: Container[]): void;
@@ -32,8 +36,10 @@ interface Container {
         hide: string;
         showHide: string;
         timezone: string;
-        nextShow: moment.Moment;
-        nextHide: moment.Moment;
+        next: {
+            show: moment.Moment;
+            hide: moment.Moment;
+        };
     };
 }
 export declare const scheduler: Scheduler;
