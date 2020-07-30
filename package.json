@@ -2,7 +2,6 @@
   "name": "ts-schedule",
   "version": "0.4.1",
   "description": "Schedule showing and hiding of DOM elements.",
-  "main": "index.ts",
   "directories": {
     "example": "example"
   },
@@ -10,12 +9,14 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "type-check": "tsc --noEmit",
     "type-check:watch": "npm run type-check -- --watch",
-    "build": "npm run build:types && npm run build:js",
     "build:types": "tsc --emitDeclarationOnly",
-    "build:js": "babel src --out-dir lib --extensions \".ts,.tsx\" --source-maps inline",
-    "bundle:dev": "webpack --mode=development",
-    "bundle": "webpack"
+    "build:js": "rollup -c",
+    "build": "npm run build:types && npm run build:js"
   },
+  "main": "dist/rollup-plugin-babel.cjs.js",
+  "module": "dist/rollup-plugin-babel.esm.js",
+  "browser": "dist/rollup-plugin-babel.iife.js",
+  "types": "dist/types/index.d.ts",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/17xande/ts-schedule.git"
@@ -32,6 +33,7 @@
   },
   "homepage": "https://github.com/17xande/ts-schedule#readme",
   "dependencies": {
+    "@babel/polyfill": "^7.10.4",
     "moment": "*"
   },
   "devDependencies": {
@@ -40,7 +42,11 @@
     "@babel/plugin-proposal-class-properties": "*",
     "@babel/preset-env": "*",
     "@babel/preset-typescript": "*",
+    "@rollup/plugin-babel": "^5.1.0",
+    "@rollup/plugin-commonjs": "^14.0.0",
+    "@rollup/plugin-node-resolve": "^8.4.0",
     "babel-loader": "*",
+    "rollup": "^2.23.0",
     "typescript": "^3.9.7"
   }
 }
