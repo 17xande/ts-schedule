@@ -53,18 +53,21 @@
     <h1>ts-schedule Example</h1>
     <!-- Basic schedule examples -->
     <div class="riversschedule"
-      data-show="2020-07-16T10:54:00"
-      data-hide="2020-07-16T10:54:30"
-      ><h1>Once Off</h1>
+      data-show="2020-07-30T13:07:00"
+      data-hide="2020-07-30T13:07:30"
+    >
+      <h1>Once Off</h1>
     </div>
     <div class="riversschedule"
-      data-show="Thursday|10:54:00"
-      data-hide="Thursday|10:54:30"
-      ><h1>Recurring Single</h1>
+      data-show="Thursday|13:08:00"
+      data-hide="Thursday|13:08:30"
+    >
+      <h1>Recurring Single</h1>
     </div>
     <div class="riversschedule"
-      data-show-hide="Monday,Tuesday,Thursday|11:30-11:31,11:32-11:33,11:34-11:35,11:36-11:37,11:38-11:39"
-      ><h1>Recurring Multiple</h1>
+      data-show-hide="Monday,Tuesday,Thursday|13:00-13:01,13:02-13:03,13:04-13:05,13:06-13:07,13:08-13:09"
+    >
+      <h1>Recurring Multiple</h1>
     </div>
 
     <!-- 
@@ -75,31 +78,37 @@
     <!-- video insertion examples -->
     <!-- video div insert -->
     <div class="riversschedule"
-      data-show-hide="Monday,Tuesday|14:40-14:41,14:42-14:43,14:44-14:45,14:46-14:47,14:48-14:49"
+      data-show-hide="Monday,Tuesday|13:10-13:11,13:12-13:13,13:14-13:15,13:16-13:17,13:18-13:19"
       data-embed-id="cd01cdaf-1846-4100-858c-78e413ab6798"
-    ><h1>Embed-ID</h1>
+    >
+      <h1>Embed-ID</h1>
     </div>
 
     <!-- video iframe insert -->
     <div class="riversschedule"
-      data-show-hide="Monday,Tuesday|15:10-15:11,15:12-15:13,15:14-15:15,15:16-15:17,15:18-15:19"
+      data-show-hide="Monday,Tuesday|13:10-13:11,13:12-13:13,13:14-13:15,13:16-13:17,13:18-13:19"
       data-video-url="https://control.livingasone.com/webplayer/video.html?iframe=true&id=cd01cdaf-1846-4100-858c-78e413ab6798"
-    ><h1>Video-URL</h1>
+    >
+      <h1>Video-URL | iFrame</h1>
     </div>
 
     <!-- chat insertion examples -->
     <!-- chat div insert -->
     <div class="riversschedule"
-    data-show-hide="Monday,Tuesday,Thursday|15:40-15:41,15:42-15:43,15:44-15:45,15:46-15:47,15:48-15:49"
+    data-show-hide="Monday,Tuesday|13:10-13:11,13:12-13:13,13:14-13:15,13:16-13:17,13:18-13:19"
       data-chat-publisher="rivers-church-staging"
       data-chat-room="rivers-church-staging-global"
-    ></div>
+    >
+      <h1>Chat Room</h1>
+    </div>
 
     <!-- chat iframe insert -->
     <div class="riversschedule"
-      data-show-hide="Monday,Tuesday,Thursday|16:10-16:11,16:12-16:13,16:14-16:15,16:16-16:17,16:18-16:19"
+      data-show-hide="Monday,Tuesday|13:10-13:11,13:12-13:13,13:14-13:15,13:16-13:17,13:18-13:19"
       data-chat-url="https://go.arena.im/embed/chat/rivers-church/2mfe"
-    ></div>
+    >
+    <h1>Chat URL | iFrame</h1>
+    </div>
 
     <!-- countdown clock insertion example -->
     <div class="riversschedule"
@@ -113,7 +122,7 @@
     <!-- combination of multiple inserts -->
     <!-- video div + chat div -->
     <div class="riversschedule"
-      data-show-hide="Monday,Tuesday,Saturday|16:20-16:21,16:22-16:23,16:24-16:25,16:26-16:27,16:28-16:29"
+      data-show-hide="Monday,Tuesday,Saturday|13:40-13:41,13:42-13:43,13:44-13:45,13:46-13:47,13:48-13:49"
       data-embed-id="cd01cdaf-1846-4100-858c-78e413ab6798"
       data-chat-publisher="rivers-church-staging"
       data-chat-room="rivers-church-staging-global"
@@ -121,16 +130,12 @@
 
     <!-- video iframe + chat iframe -->
     <div class="riversschedule"
-      data-show-hide="Monday,Tuesday,Friday|16:20-16:21,16:22-16:23,16:24-16:25,16:26-16:27,16:28-16:29"
+      data-show-hide="Monday,Tuesday,Thursday|13:10-13:11,13:12-13:13,13:14-13:15,13:16-13:17,13:18-13:19"
       data-video-url="https://control.livingasone.com/webplayer/video.html?iframe=true&id=cd01cdaf-1846-4100-858c-78e413ab6798"
       data-chat-url="https://go.arena.im/embed/chat/rivers-church/2mfe"
     ></div>
 
-    <!-- <script src="dist/schedule_test.js"></script> -->
-    <!-- <script src="../dist/jschedule.bundle.js"></script> -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.27.0/moment.min.js"></script>
-    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.31/moment-timezone.min.js"></script> -->
-    <script type="module" src="/dist/rollup-plugin-babel.iife.js"></script>
-    <!-- <script src="../lib/index.js"></script> -->
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.27.0/moment.min.js"></script> -->
+    <script type="module" src="/dist/rollup-plugin-babel.iife.0.4.2.js"></script>
   </body>
 </html>

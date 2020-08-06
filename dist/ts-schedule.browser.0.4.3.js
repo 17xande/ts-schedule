@@ -1,4 +1,4 @@
-var RollupTypeScriptBabel = (function (exports) {
+var tsSchedule = (function (exports) {
 	'use strict';
 
 	var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
@@ -5682,7 +5682,6 @@ var RollupTypeScriptBabel = (function (exports) {
 	// Author: Alexandre Figueiredo
 
 	var scheduler = {
-	  version: "0.4.0",
 	  endOfTime: moment(8640000000000000),
 	  debug: true,
 	  logging: true,
@@ -5962,11 +5961,11 @@ var RollupTypeScriptBabel = (function (exports) {
 	    };
 
 	    if (container.hasVideo || container.hasChat) {
-	      var _container$div$queryS;
-
 	      // Clear out the contents of the container.
 	      // Not sure if this is the best approach, but it works for now.
-	      (_container$div$queryS = container.div.querySelector('.containerVideo')) === null || _container$div$queryS === void 0 ? void 0 : _container$div$queryS.remove(); // This is assuming that there will ever only be one video and one chat per page.
+	      container.div.querySelectorAll('.containerVideo, .containerChat').forEach(function (e) {
+	        return e.remove();
+	      }); // This is assuming that there will ever only be one video and one chat per page.
 	      // window.removeEventListener('resize', scheduler.vidResize)
 	    }
 	  },

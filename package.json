@@ -1,6 +1,6 @@
 {
   "name": "ts-schedule",
-  "version": "0.4.1",
+  "version": "0.4.3",
   "description": "Schedule showing and hiding of DOM elements.",
   "directories": {
     "example": "example"
@@ -11,11 +11,11 @@
     "type-check:watch": "npm run type-check -- --watch",
     "build:types": "tsc --emitDeclarationOnly",
     "build:js": "rollup -c",
-    "build": "npm run build:types && npm run build:js"
+    "build": "npm run build:types && npm run build:js",
+    "watch:js": "rollup -c -w",
+    "watch": "npm run build:types && npm run watch:js"
   },
-  "main": "dist/rollup-plugin-babel.cjs.js",
-  "module": "dist/rollup-plugin-babel.esm.js",
-  "browser": "dist/rollup-plugin-babel.iife.js",
+  "main": "src/index.ts",
   "types": "dist/types/index.d.ts",
   "repository": {
     "type": "git",
@@ -38,9 +38,9 @@
   },
   "devDependencies": {
     "@babel/cli": "^7.10.5",
-    "@babel/core": "^7.10.5",
+    "@babel/core": "^7.11.1",
     "@babel/plugin-proposal-class-properties": "*",
-    "@babel/preset-env": "*",
+    "@babel/preset-env": "^7.11.0",
     "@babel/preset-typescript": "*",
     "@rollup/plugin-babel": "^5.1.0",
     "@rollup/plugin-commonjs": "^14.0.0",

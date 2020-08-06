@@ -1,6 +1,5 @@
 import moment from '../node_modules/moment/moment.js';
 interface Scheduler {
-    readonly version: string;
     readonly endOfTime: moment.Moment;
     debug: boolean;
     logging: boolean;

@@ -1,11 +1,10 @@
 // Author: Alexandre Figueiredo
-// Source: github.com/17xande/JSchedule
+// Source: github.com/17xande/ts-schedule
 
 import moment from '../node_modules/moment/moment.js'
 
 // Scheduler defines all the functionality of this program.
 interface Scheduler {
-  readonly version: string
   readonly endOfTime: moment.Moment
   debug: boolean
   logging: boolean
@@ -48,7 +47,6 @@ interface Container {
 }
 
 export const scheduler: Scheduler = {
-  version: "0.4.2",
   endOfTime: moment(8640000000000000),
   debug: true,
   logging: true,
@@ -331,7 +329,7 @@ export const scheduler: Scheduler = {
     if (container.hasVideo || container.hasChat) {
       // Clear out the contents of the container.
       // Not sure if this is the best approach, but it works for now.
-      container.div.querySelector('.containerVideo')?.remove()
+      container.div.querySelectorAll('.containerVideo, .containerChat').forEach(e => e.remove())
       // This is assuming that there will ever only be one video and one chat per page.
       // window.removeEventListener('resize', scheduler.vidResize)
     }

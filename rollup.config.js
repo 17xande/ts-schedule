@@ -7,8 +7,6 @@ const extensions = [
   '.js', '.jsx', '.ts', '.tsx',
 ];
 
-const name = 'RollupTypeScriptBabel';
-
 export default {
   input: './src/index.ts',
 
@@ -28,15 +26,15 @@ export default {
   ],
 
   output: [{
-    file: pkg.main,
-    format: 'cjs',
-  }, {
-    file: pkg.module,
-    format: 'es',
-  }, {
-    file: pkg.browser,
+  //   file: `dist/${pkg.name}.common.${pkg.version}.js`,
+  //   format: 'cjs',
+  // }, {
+  //   file: `dist/${pkg.name}.module.${pkg.version}.js`,
+  //   format: 'es',
+  // }, {
+    file: `dist/${pkg.name}.browser.${pkg.version}.js`,
     format: 'iife',
-    name,
+    name: 'tsSchedule',
 
     // https://rollupjs.org/guide/en#output-globals-g-globals
     globals: {},
