@@ -329,7 +329,7 @@ export const scheduler: Scheduler = {
     if (container.hasVideo || container.hasChat) {
       // Clear out the contents of the container.
       // Not sure if this is the best approach, but it works for now.
-      container.div.querySelectorAll('.containerVideo, .containerChat').forEach(e => e.remove())
+      container.div.querySelectorAll('.containerVideo, .containerChat, .arena--initial-loading').forEach(e => e.remove())
       // This is assuming that there will ever only be one video and one chat per page.
       // window.removeEventListener('resize', scheduler.vidResize)
     }
@@ -441,6 +441,9 @@ export const scheduler: Scheduler = {
       container.insertAdjacentHTML('beforeend', template)
       const scriptSrc = `https://go.arena.im/public/js/arenachatlib.js?p=${chatPublisher}&e=${chatRoom}`
       this.insertScript(scriptSrc)
+
+      // @ts-ignore
+      window.arenaChat?.reset?.()
     } else {
       console.warn(`incorrect dataset parameters for chat embedding.`)
     }

@@ -5963,7 +5963,7 @@ var tsSchedule = (function (exports) {
 	    if (container.hasVideo || container.hasChat) {
 	      // Clear out the contents of the container.
 	      // Not sure if this is the best approach, but it works for now.
-	      container.div.querySelectorAll('.containerVideo, .containerChat').forEach(function (e) {
+	      container.div.querySelectorAll('.containerVideo, .containerChat, .arena--initial-loading').forEach(function (e) {
 	        return e.remove();
 	      }); // This is assuming that there will ever only be one video and one chat per page.
 	      // window.removeEventListener('resize', scheduler.vidResize)
@@ -6065,10 +6065,14 @@ var tsSchedule = (function (exports) {
 	      template = "<div class=\"containerChat\"><iframe src=\"".concat(chatUrl, "\"></iframe></div>");
 	      container.insertAdjacentHTML('beforeend', template);
 	    } else if (chatPublisher) {
+	      var _window$arenaChat, _window$arenaChat$res;
+
 	      template = "<div class=\"arena-chat containerChat\" data-publisher=\"".concat(chatPublisher, "\" data-chatroom=\"").concat(chatRoom, "\" data-position=\"in-page\"></div>");
 	      container.insertAdjacentHTML('beforeend', template);
 	      var scriptSrc = "https://go.arena.im/public/js/arenachatlib.js?p=".concat(chatPublisher, "&e=").concat(chatRoom);
-	      this.insertScript(scriptSrc);
+	      this.insertScript(scriptSrc); // @ts-ignore
+
+	      (_window$arenaChat = window.arenaChat) === null || _window$arenaChat === void 0 ? void 0 : (_window$arenaChat$res = _window$arenaChat.reset) === null || _window$arenaChat$res === void 0 ? void 0 : _window$arenaChat$res.call(_window$arenaChat);
 	    } else {
 	      console.warn("incorrect dataset parameters for chat embedding.");
 	    }
