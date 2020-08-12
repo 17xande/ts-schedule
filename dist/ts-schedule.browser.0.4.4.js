@@ -6094,7 +6094,13 @@ var tsSchedule = (function (exports) {
 	    cv.style.height = cv.clientWidth * 9 / 16 + 'px';
 	  }
 	};
+	try {
 	scheduler.start(); // @ts-ignore
+	} catch(err) {
+		scheduler.containers[0].div.parentElement.innerHTML = '<h3>' + err.toString() + '</h3><p>' + err.stack + '</p>';
+		// console.log(err);
+		// alert(err);
+	}
 
 	window.scheduler = scheduler;
 

@@ -278,6 +278,7 @@ export const scheduler: Scheduler = {
     let dayIndex = scheduler.days.indexOf(day)
     if (dayIndex === -1) {
       // If it's an invalid day, set the default to today.
+      // TODO: this is a bad idea. If there is an invalid day we should return an error and never show.
       dayIndex = now.day()
       if (scheduler.logging) {
         console.warn(`Invalid day in 'show' attribute:\n`, day)
@@ -462,6 +463,7 @@ export const scheduler: Scheduler = {
 
   // vidResize resizes a video iframe to a 16:9 ratio.
   // Hopefully we won't need to use this anymore.
+  // Never mind, we will need to use this for the iFrame injection logic, because iFrames are jerks.
   vidResize() {
     let cv = <HTMLDivElement>document.querySelector('div.containerVideo')
     cv.style.height = cv.clientWidth * 9 / 16 + 'px'
@@ -469,6 +471,15 @@ export const scheduler: Scheduler = {
 }
 
 scheduler.start()
+
+// not standard debugging
+// try {
+// 	scheduler.start(); // @ts-ignore
+// } catch(err) {
+//   scheduler.containers[0].div.parentElement.innerHTML = '<h3>' + err.toString() + '</h3><p>' + err.stack + '</p>';
+//   // console.log(err);
+//   // alert(err);
+// }
 
 // @ts-ignore
 window.scheduler = scheduler
