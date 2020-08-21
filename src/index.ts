@@ -36,6 +36,7 @@ interface Container {
   div: HTMLDivElement
   hasVideo: boolean
   hasChat: boolean
+  hasClock: boolean
   schedule: {
     type: string
     show: string
@@ -86,11 +87,13 @@ export const scheduler: Scheduler = {
       const chatUrl = div.dataset.chatUrl ?? ''
       const chatRoom = div.dataset.chatRoom ?? ''
       const videoUrl = div.dataset.videoUrl ?? ''
+      const clockEnd = div.dataset.clockend ?? ''
       
       let container: Container = {
         div: div,
         hasVideo: div.dataset.embedId?.length === 36 || videoUrl != '',
         hasChat: chatUrl != '' || chatRoom != '',
+        hasClock: clockEnd != '',
         schedule: {
           type: '',
           show: div.dataset.show ?? '',
@@ -296,8 +299,6 @@ export const scheduler: Scheduler = {
   showHide(container) {
     // Ignore invalid containers.
     if (container.schedule.type === 'invalid') return
-    // Ignore clock type containers. They're doing their thing somewhere else.
-    if (container.div.dataset.clock) return
     const now = moment()
 
     if (now.isBetween(container.schedule.next.show, container.schedule.next.hide)) {
@@ -342,17 +343,16 @@ export const scheduler: Scheduler = {
     let that = this
     scheduler.timerID = window.setInterval(() => {
       containers.forEach(container => {
-        if (!container.div.dataset.clock) {
-          that.showHide(container)
-          return
-        }
+        that.showHide(container)
 
-        const time = that.clockCalc(container)
-        const children = container.div.children
-        if (children.length > 0) {
-          children[0].textContent = time
-        } else {
-          container.div.innerHTML = `<p>${time}</p>`
+        if (container.hasClock) {
+          const time = that.clockCalc(container)
+          const el = container.div.querySelector('.rivTime')
+          if (el) {
+            el.textContent = time
+          } else {
+            container.div.innerHTML = `<p>${time}</p>`
+          }
         }
       })
     }, 1000)
@@ -361,27 +361,18 @@ export const scheduler: Scheduler = {
 
   // clockCalc calculates what to set a timer to.
   clockCalc(container) {
-    // const now = new Date(),
-    //       end = (container.div.dataset.clockend || "00:00").split(':')
-    let clock = ""
-    console.log(container)
-    // for (let i = 0; i < container.schedule.length; i++){
-    //   for (let i = 0; i < container.schedule.length; i++){
-    //   const schedule = container.schedule[i]
-    //   if (now > schedule.show) continue
-
-    //   let diff = Math.floor((schedule.show.getTime() - now.getTime()) / 1000)
-    //   diff += parseInt(end[0]) * 60 + parseInt(end[1])
-
-    //   const days = Math.floor(diff / (24 * 60 * 60)),
-    //         hours = scheduler.padZero(Math.floor(diff % (24 * 60 * 60) / (60 * 60))),
-    //         minutes = scheduler.padZero(Math.floor(diff % (60 * 60) / 60)),
-    //         seconds = scheduler.padZero(Math.floor(diff % 60))
-
-    //   clock = `${days} days ${hours}:${minutes}:${seconds}`
-    //   break
-    // }
-
+    const now = moment()
+    const clockEnd = (container.div.dataset.clockend || "00:00").split(':')
+    const endTime = container.schedule.next.hide
+    const dur = moment.duration(endTime.diff(now)).add(clockEnd[0], 'minutes').add(clockEnd[1], 'seconds')
+    const days = dur.days()
+    let sDays = ''
+    if (days === 1) {
+      sDays = 'Day'
+    } else if (days > 1) {
+      sDays = 'Days'
+    }
+    const clock = `${days || ''} ${sDays} ${scheduler.padZero(dur.hours())}:${scheduler.padZero(dur.minutes())}:${scheduler.padZero(dur.seconds())}`
     return clock
   },
 

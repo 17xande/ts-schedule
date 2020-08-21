@@ -29,6 +29,7 @@ interface Container {
     div: HTMLDivElement;
     hasVideo: boolean;
     hasChat: boolean;
+    hasClock: boolean;
     schedule: {
         type: string;
         show: string;

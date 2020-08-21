@@ -72,7 +72,7 @@
 
     <!-- image example -->
     <div class="riversschedule"
-      data-show-hide="Friday|10:30-10:31,10:32-10:33,10:34-10:35,10:36-10:37,10:38-10:39"
+      data-show-hide="Saturday|10:30-10:31,10:32-10:33,10:34-10:35,10:36-10:37,10:38-10:39"
     >
       <img src="https://source.unsplash.com/random/300x150" alt="unsplash">
     </div>
@@ -119,11 +119,12 @@
 
     <!-- countdown clock -->
     <div class="riversschedule"
-      data-show="Saturday|01:00:00"
-      data-hide="Saturday|20:00:00"
       style="color: white;"
-      data-clockend="10:00">
-      <h4>Time till next service</h4>
+      data-show="Friday|10:00:00"
+      data-hide="Sunday|11:30:00"
+      data-clockend="10:00"
+    >
+      <p>Time till next service: <span class="rivTime"></span></p>
     </div>
 
     <!-- combination of multiple inserts -->
@@ -142,7 +143,7 @@
       data-chat-url="https://go.arena.im/embed/chat/rivers-church-staging/rivers-church-staging-global"
     ></div>
 
-    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.27.0/moment.min.js"></script> -->
-    <script type="module" src="/dist/ts-schedule.browser.0.4.4.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.27.0/moment.min.js"></script>
+    <script type="module" src="/dist/ts-schedule.browser.0.4.5.js"></script>
   </body>
 </html>

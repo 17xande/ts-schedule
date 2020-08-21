@@ -5716,16 +5716,18 @@ var tsSchedule = (function (exports) {
 	    var containers = [];
 
 	    for (var i = 0; i < divs.length; i++) {
-	      var _div$dataset$chatUrl, _div$dataset$chatRoom, _div$dataset$videoUrl, _div$dataset$embedId, _div$dataset$show, _div$dataset$hide, _div$dataset$showHide, _div$dataset$timezone;
+	      var _div$dataset$chatUrl, _div$dataset$chatRoom, _div$dataset$videoUrl, _div$dataset$clockend, _div$dataset$embedId, _div$dataset$show, _div$dataset$hide, _div$dataset$showHide, _div$dataset$timezone;
 
 	      var div = divs[i];
 	      var chatUrl = (_div$dataset$chatUrl = div.dataset.chatUrl) !== null && _div$dataset$chatUrl !== void 0 ? _div$dataset$chatUrl : '';
 	      var chatRoom = (_div$dataset$chatRoom = div.dataset.chatRoom) !== null && _div$dataset$chatRoom !== void 0 ? _div$dataset$chatRoom : '';
 	      var videoUrl = (_div$dataset$videoUrl = div.dataset.videoUrl) !== null && _div$dataset$videoUrl !== void 0 ? _div$dataset$videoUrl : '';
+	      var clockEnd = (_div$dataset$clockend = div.dataset.clockend) !== null && _div$dataset$clockend !== void 0 ? _div$dataset$clockend : '';
 	      var _container = {
 	        div: div,
 	        hasVideo: ((_div$dataset$embedId = div.dataset.embedId) === null || _div$dataset$embedId === void 0 ? void 0 : _div$dataset$embedId.length) === 36 || videoUrl != '',
 	        hasChat: chatUrl != '' || chatRoom != '',
+	        hasClock: clockEnd != '',
 	        schedule: {
 	          type: '',
 	          show: (_div$dataset$show = div.dataset.show) !== null && _div$dataset$show !== void 0 ? _div$dataset$show : '',
@@ -5911,6 +5913,7 @@ var tsSchedule = (function (exports) {
 
 	    if (dayIndex === -1) {
 	      // If it's an invalid day, set the default to today.
+	      // TODO: this is a bad idea. If there is an invalid day we should return an error and never show.
 	      dayIndex = now.day();
 
 	      if (scheduler.logging) {
@@ -5926,9 +5929,7 @@ var tsSchedule = (function (exports) {
 	  // elements like iFrames if necessary.
 	  showHide: function showHide(container) {
 	    // Ignore invalid containers.
-	    if (container.schedule.type === 'invalid') return; // Ignore clock type containers. They're doing their thing somewhere else.
-
-	    if (container.div.dataset.clock) return;
+	    if (container.schedule.type === 'invalid') return;
 	    var now = moment();
 
 	    if (now.isBetween(container.schedule.next.show, container.schedule.next.hide)) {
@@ -5975,18 +5976,17 @@ var tsSchedule = (function (exports) {
 	    var that = this;
 	    scheduler.timerID = window.setInterval(function () {
 	      containers.forEach(function (container) {
-	        if (!container.div.dataset.clock) {
-	          that.showHide(container);
-	          return;
-	        }
+	        that.showHide(container);
 
-	        var time = that.clockCalc(container);
-	        var children = container.div.children;
+	        if (container.hasClock) {
+	          var time = that.clockCalc(container);
+	          var el = container.div.querySelector('.rivTime');
 
-	        if (children.length > 0) {
-	          children[0].textContent = time;
-	        } else {
-	          container.div.innerHTML = "<p>".concat(time, "</p>");
+	          if (el) {
+	            el.textContent = time;
+	          } else {
+	            container.div.innerHTML = "<p>".concat(time, "</p>");
+	          }
 	        }
 	      });
 	    }, 1000);
@@ -5994,23 +5994,20 @@ var tsSchedule = (function (exports) {
 	  },
 	  // clockCalc calculates what to set a timer to.
 	  clockCalc: function clockCalc(container) {
-	    // const now = new Date(),
-	    //       end = (container.div.dataset.clockend || "00:00").split(':')
-	    var clock = "";
-	    console.log(container); // for (let i = 0; i < container.schedule.length; i++){
-	    //   for (let i = 0; i < container.schedule.length; i++){
-	    //   const schedule = container.schedule[i]
-	    //   if (now > schedule.show) continue
-	    //   let diff = Math.floor((schedule.show.getTime() - now.getTime()) / 1000)
-	    //   diff += parseInt(end[0]) * 60 + parseInt(end[1])
-	    //   const days = Math.floor(diff / (24 * 60 * 60)),
-	    //         hours = scheduler.padZero(Math.floor(diff % (24 * 60 * 60) / (60 * 60))),
-	    //         minutes = scheduler.padZero(Math.floor(diff % (60 * 60) / 60)),
-	    //         seconds = scheduler.padZero(Math.floor(diff % 60))
-	    //   clock = `${days} days ${hours}:${minutes}:${seconds}`
-	    //   break
-	    // }
+	    var now = moment();
+	    var clockEnd = (container.div.dataset.clockend || "00:00").split(':');
+	    var endTime = container.schedule.next.hide;
+	    var dur = moment.duration(endTime.diff(now)).add(clockEnd[0], 'minutes').add(clockEnd[1], 'seconds');
+	    var days = dur.days();
+	    var sDays = '';
 
+	    if (days === 1) {
+	      sDays = 'Day';
+	    } else if (days > 1) {
+	      sDays = 'Days';
+	    }
+
+	    var clock = "".concat(days || '', " ").concat(sDays, " ").concat(scheduler.padZero(dur.hours()), ":").concat(scheduler.padZero(dur.minutes()), ":").concat(scheduler.padZero(dur.seconds()));
 	    return clock;
 	  },
 	  // padZero returns a single zero padded number as a string.
@@ -6089,18 +6086,21 @@ var tsSchedule = (function (exports) {
 	  },
 	  // vidResize resizes a video iframe to a 16:9 ratio.
 	  // Hopefully we won't need to use this anymore.
+	  // Never mind, we will need to use this for the iFrame injection logic, because iFrames are jerks.
 	  vidResize: function vidResize() {
 	    var cv = document.querySelector('div.containerVideo');
 	    cv.style.height = cv.clientWidth * 9 / 16 + 'px';
 	  }
 	};
-	try {
-	scheduler.start(); // @ts-ignore
-	} catch(err) {
-		scheduler.containers[0].div.parentElement.innerHTML = '<h3>' + err.toString() + '</h3><p>' + err.stack + '</p>';
-		// console.log(err);
-		// alert(err);
-	}
+	scheduler.start(); // not standard debugging
+	// try {
+	// 	scheduler.start(); // @ts-ignore
+	// } catch(err) {
+	//   scheduler.containers[0].div.parentElement.innerHTML = '<h3>' + err.toString() + '</h3><p>' + err.stack + '</p>';
+	//   // console.log(err);
+	//   // alert(err);
+	// }
+	// @ts-ignore
 
 	window.scheduler = scheduler;
 
