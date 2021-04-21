@@ -1,6 +1,6 @@
 {
   "name": "ts-schedule",
-  "version": "0.4.6",
+  "version": "0.4.7",
   "description": "Schedule showing and hiding of DOM elements.",
   "directories": {
     "example": "example"
