@@ -384,7 +384,7 @@ export const scheduler: Scheduler = {
   },
 
   // insertVideo inserts the <div> and <script> elements to create the
-  // LA1 video experience.
+  // Resi video experience.
   insertVideo(container) {
     if (container.querySelector('.containerVideo') != null) {
       // video already there, do nothing.
@@ -400,9 +400,9 @@ export const scheduler: Scheduler = {
       container.insertAdjacentHTML('afterbegin', template)
     }
     else if (embedID) {
-      template = `<div id="la1-video-player" class="containerVideo" data-embed-id="${embedID}"></div>`
+      template = `<div id="resi-video-player" class="containerVideo" data-embed-id="${embedID}"></div>`
       container.insertAdjacentHTML('afterbegin', template)
-      scheduler.insertScript('https://control.livingasone.com/webplayer/loader.min.js')
+      scheduler.insertScript('https://control.resi.io/webplayer/loader.min.js')
       
       // @ts-ignore
       window.la1InitWebPlayer?.()
