@@ -35,6 +35,7 @@ export default {
     file: `dist/${pkg.name}.browser.${pkg.version}.js`,
     format: 'iife',
     name: 'tsSchedule',
+    sourcemap: true,
 
     // https://rollupjs.org/guide/en#output-globals-g-globals
     globals: {},
