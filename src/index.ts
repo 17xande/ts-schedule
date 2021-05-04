@@ -179,7 +179,7 @@ export const scheduler: Scheduler = {
         // Find how many days till the next show day that was specified.
         let daysAdded = this.getDayDifference(arrS[0])
         // Add those days to the show date.
-        ts.add(daysAdded, 'days')
+        // ts.add(daysAdded, 'days')
         // Set the time of the show date.
         ts.hours(parseInt(timeS[0], 10))
         ts.minutes(parseInt(timeS[1], 10))
