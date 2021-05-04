@@ -56,7 +56,7 @@ export const scheduler: Scheduler = {
   days: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
   containers: [],
 
-  // start finds the containers on the page and initialised them.
+  // start finds the containers on the page and initialises them.
   start() {
     if (scheduler.debug) scheduler.logging = true
     // stop previous timeLoop, if there is one running
