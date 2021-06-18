@@ -22,6 +22,7 @@ interface Scheduler {
     padZero(num: number): string;
     insertVideo(container: HTMLDivElement): void;
     insertChat(container: HTMLDivElement): void;
+    insertSheetLookup(container: HTMLDivElement): void;
     insertScript(src: string): void;
     vidResize(): void;
 }
@@ -30,6 +31,7 @@ interface Container {
     hasVideo: boolean;
     hasChat: boolean;
     hasClock: boolean;
+    hasSheetLookup: boolean;
     schedule: {
         type: string;
         show: string;

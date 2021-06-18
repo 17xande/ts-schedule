@@ -25,6 +25,7 @@ interface Scheduler {
   padZero(num: number): string
   insertVideo(container: HTMLDivElement): void
   insertChat(container: HTMLDivElement): void
+  insertSheetLookup(container: HTMLDivElement): Promise<any>
   insertScript(src: string): void
   vidResize(): void
 }
@@ -37,6 +38,7 @@ interface Container {
   hasVideo: boolean
   hasChat: boolean
   hasClock: boolean
+  hasSheetLookup: boolean
   schedule: {
     type: string
     show: string
@@ -88,12 +90,14 @@ export const scheduler: Scheduler = {
       const chatRoom = div.dataset.chatRoom ?? ''
       const videoUrl = div.dataset.videoUrl ?? ''
       const clockEnd = div.dataset.clockend ?? ''
-      
+      const sheetLookup = div.dataset.sheetLookup ?? ''
+
       let container: Container = {
         div: div,
         hasVideo: div.dataset.embedId?.length === 36 || videoUrl != '',
         hasChat: chatUrl != '' || chatRoom != '',
         hasClock: clockEnd != '',
+        hasSheetLookup: sheetLookup != '',
         schedule: {
           type: '',
           show: div.dataset.show ?? '',
@@ -308,6 +312,9 @@ export const scheduler: Scheduler = {
       if (container.hasChat) {
         scheduler.insertChat(container.div)
       }
+      if (container.hasSheetLookup) {
+        scheduler.insertSheetLookup(container.div)
+      }
 
       // This container should be shown at this time.
       // If the container is already showing, just move on.
@@ -440,6 +447,35 @@ export const scheduler: Scheduler = {
       console.warn(`incorrect dataset parameters for chat embedding.`)
     }
     if (this.logging) console.log(`chat inserted.`)
+  },
+
+  // insertSheetLookup gets a url from a google sheet and inserts an iframe with its source set to that url.
+  insertSheetLookup(container) {
+    if (container.querySelector('.containerVideo') != null) {
+      return Promise.resolve()
+    }
+
+    const sheetId = container.dataset.sheetId
+    const sheetLookup = container.dataset.sheetLookup
+    const url = `https://spreadsheets.google.com/feeds/list/${sheetId}/od6/public/values?alt=json`
+    // const res = await fetch(url)
+    // const data = await res.json()
+    // const entries = data.feed.entry
+
+    const p = fetch(url)
+      .then(res => res.json())
+      .then(data => {
+        const entries = data.feed.entry
+        const f = entries.filter((e: any) => e.gsx$key.$t === sheetLookup)
+        if (f.length === 0) return Promise.reject()
+        const src = f[0]?.gsx$link?.$t ?? ''
+        if (src === '') return Promise.reject()
+        const template = `<div class="containerVideo"><iframe src=${src}></iframe></div>`
+        container.insertAdjacentHTML('afterbegin', template)
+        return src
+      })
+      
+    return p
   },
 
   // insertScript inserts a script tag with a source if it isn't already inserted.
