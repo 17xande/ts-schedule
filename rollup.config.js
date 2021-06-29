@@ -22,7 +22,7 @@ export default {
     commonjs(),
 
     // Compile TypeScript/JavaScript files
-    babel({ extensions, include: ['src/**/*'], babelHelpers: 'bundled', }),
+    babel({ extensions, include: ['src/**/*'], babelHelpers: 'runtime', }),
   ],
 
   output: [{
@@ -38,6 +38,9 @@ export default {
     sourcemap: true,
 
     // https://rollupjs.org/guide/en#output-globals-g-globals
-    globals: {},
+    globals: {
+      // "@babel/runtime/regenerator": "regeneratorRuntime",
+      // "@babel/runtime/helpers/asyncToGenerator": "asyncToGenerator"
+    },
   }],
 };
