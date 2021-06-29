@@ -9,6 +9,8 @@ interface Scheduler {
     containers: Container[];
     start(): void;
     stop(): void;
+    getSheetContainers(selector: string): HTMLDivElement[];
+    updateSheetContainers(sheetContainers: HTMLDivElement[]): void;
     getContainers(selector: string): Container[];
     getScheduleType(container: Container): string;
     getNextTime(container: Container): {
@@ -22,7 +24,7 @@ interface Scheduler {
     padZero(num: number): string;
     insertVideo(container: HTMLDivElement): void;
     insertChat(container: HTMLDivElement): void;
-    insertSheetLookup(container: HTMLDivElement): void;
+    insertSheetLookup(container: HTMLDivElement): Promise<any>;
     insertScript(src: string): void;
     vidResize(): void;
 }
@@ -31,7 +33,6 @@ interface Container {
     hasVideo: boolean;
     hasChat: boolean;
     hasClock: boolean;
-    hasSheetLookup: boolean;
     schedule: {
         type: string;
         show: string;

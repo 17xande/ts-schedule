@@ -15,6 +15,8 @@ interface Scheduler {
 
   start(): void
   stop(): void
+  getSheetContainers(selector: string): HTMLDivElement[]
+  updateSheetContainers(sheetContainers: HTMLDivElement[]): void
   getContainers(selector: string): Container[]
   getScheduleType(container: Container): string
   getNextTime(container: Container): { show: moment.Moment, hide: moment.Moment }
@@ -38,7 +40,6 @@ interface Container {
   hasVideo: boolean
   hasChat: boolean
   hasClock: boolean
-  hasSheetLookup: boolean
   schedule: {
     type: string
     show: string
@@ -50,7 +51,7 @@ interface Container {
 }
 
 export const scheduler: Scheduler = {
-  endOfTime: moment(8640000000000000),
+  endOfTime: moment(32503672800000),
   debug: true,
   logging: true,
   selector: 'div.riversschedule',
@@ -59,10 +60,12 @@ export const scheduler: Scheduler = {
   containers: [],
 
   // start finds the containers on the page and initialises them.
-  start() {
+  async start() {
     if (scheduler.debug) scheduler.logging = true
     // stop previous timeLoop, if there is one running
     scheduler.stop()
+    const sheetContainers = scheduler.getSheetContainers(scheduler.selector)
+    await scheduler.updateSheetContainers(sheetContainers)
     scheduler.containers = scheduler.getContainers(scheduler.selector)
     scheduler.containers.forEach(container => scheduler.showHide(container))
     scheduler.timeLoop(scheduler.containers)
@@ -76,8 +79,79 @@ export const scheduler: Scheduler = {
     }
   },
 
+  // getSheetContainers returns all elements that match the selector,
+  // and that have the data-sheetLookup attribute.
+  getSheetContainers(selector) {
+    const els = document.querySelectorAll(selector)
+    const sheetContainers = Array.from(els).map(e => <HTMLDivElement>e).filter(d => {
+      const sheetLookup = d.dataset.sheetLookup ?? ''
+      if (sheetLookup == '') return false
+      return true
+    })
+    return sheetContainers
+  },
+
+  // updateSheetContainers changes the sheet containers to regular containers,
+  // with show and hide dates and times from a google spreadsheet.
+  async updateSheetContainers(sheetContainers) {
+    interface sheet {
+      lookup: string[], value: any
+    }
+
+    if (sheetContainers.length == 0) return
+    let sheets = new Map<string, sheet>()
+
+    // Loop through the containers and create a map of each sheet ID
+    // and each lookup address for each sheet.
+    for (let i = 0; i < sheetContainers.length; i++) {
+      const c = sheetContainers[i]
+      const id = c.dataset.sheetId ?? ''
+      const lookup = c.dataset.sheetLookup ?? ''
+      if (id == '') return
+      let sheet = sheets.get(id) ?? <sheet>{}
+      sheet.lookup.push(lookup)
+      // sheets = sheets.set(id, o)
+      sheets.set(id, sheet)
+
+      if (!sheet.value) {
+        const url = `https://spreadsheets.google.com/feeds/list/${id}/od6/public/values?alt=json`
+        const res = await fetch(url)
+        const json = await res.json()
+        sheet.value = json
+      }
+
+      const entries = sheet.value.feed.entry
+      const rows = entries.filter((e: any) => e.gsx$key?.$t === lookup)
+      if (rows.length === 0) {
+        console.error(`key ${lookup} not found in sheet.`)
+        return Promise.reject()
+      }
+      const row = rows[0]
+
+      c.dataset.show = row.gsx$show?.$t ?? ''
+      c.dataset.hide = row.gsx$hide?.$t ?? ''
+      c.dataset.videoUrl = row.gsx$videoUrl?.$t ?? ''
+      c.dataset.sheetId = ''
+      c.dataset.sheetLookup = ''
+    }
+
+    // Loop through the map and request each sheet.
+    // Store the JSON response in the sheets map.
+    // for (let i = 0; i < sheets.keys.length; i++) {
+    //   const url = `https://spreadsheets.google.com/feeds/list/${id}/od6/public/values?alt=json`
+    //   const res = await fetch(url)
+    //   const json = await res.json()
+    //   sheets[i].value = json
+    // }
+    // sheets.forEach(async (sheet, id) => {
+    //   const url = `https://spreadsheets.google.com/feeds/list/${id}/od6/public/values?alt=json`
+    //   const res = await fetch(url)
+    //   const json = await res.json()
+    //   sheet.value = json
+    // })
+  },
+
   // getContainers returns all elements that match the selector.
-  // Default selector: `div.alexcustomscript`.
   getContainers(selector) {
     const divs = document.querySelectorAll(selector)
     // If targeting > ES5:
@@ -90,14 +164,12 @@ export const scheduler: Scheduler = {
       const chatRoom = div.dataset.chatRoom ?? ''
       const videoUrl = div.dataset.videoUrl ?? ''
       const clockEnd = div.dataset.clockend ?? ''
-      const sheetLookup = div.dataset.sheetLookup ?? ''
 
       let container: Container = {
         div: div,
         hasVideo: div.dataset.embedId?.length === 36 || videoUrl != '',
         hasChat: chatUrl != '' || chatRoom != '',
         hasClock: clockEnd != '',
-        hasSheetLookup: sheetLookup != '',
         schedule: {
           type: '',
           show: div.dataset.show ?? '',
@@ -311,9 +383,6 @@ export const scheduler: Scheduler = {
       }
       if (container.hasChat) {
         scheduler.insertChat(container.div)
-      }
-      if (container.hasSheetLookup) {
-        scheduler.insertSheetLookup(container.div)
       }
 
       // This container should be shown at this time.
