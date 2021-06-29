@@ -109,6 +109,7 @@ export const scheduler: Scheduler = {
       const lookup = c.dataset.sheetLookup ?? ''
       if (id == '') return
       let sheet = sheets.get(id) ?? <sheet>{}
+      if (!sheet.lookup) sheet.lookup = []
       sheet.lookup.push(lookup)
       // sheets = sheets.set(id, o)
       sheets.set(id, sheet)
@@ -130,7 +131,7 @@ export const scheduler: Scheduler = {
 
       c.dataset.show = row.gsx$show?.$t ?? ''
       c.dataset.hide = row.gsx$hide?.$t ?? ''
-      c.dataset.videoUrl = row.gsx$videoUrl?.$t ?? ''
+      c.dataset.videoUrl = row.gsx$videourl?.$t ?? ''
       c.dataset.sheetId = ''
       c.dataset.sheetLookup = ''
     }
