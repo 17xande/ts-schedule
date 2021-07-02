@@ -1,7 +1,7 @@
 // Author: Alexandre Figueiredo
 // Source: github.com/17xande/ts-schedule
 
-import moment from '../node_modules/moment/moment.js'
+import moment from 'moment'
 
 // Scheduler defines all the functionality of this program.
 interface Scheduler {
