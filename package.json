@@ -28,11 +28,11 @@
     "moment": "^2.29.1"
   },
   "devDependencies": {
-    "@babel/plugin-transform-runtime": "^7.14.5",
-    "@babel/preset-env": "^7.14.7",
-    "@babel/preset-typescript": "^7.14.5",
+    "@babel/plugin-transform-runtime": "^7.15.0",
+    "@babel/preset-env": "^7.15.0",
+    "@babel/preset-typescript": "^7.15.0",
     "@snowpack/plugin-babel": "^2.1.7",
-    "snowpack": "^3.7.1",
+    "snowpack": "^3.8.6",
     "typescript": "^4.3.5"
   }
 }
