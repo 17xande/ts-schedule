@@ -27,6 +27,7 @@ interface Scheduler {
   padZero(num: number): string
   insertVideo(container: HTMLDivElement): void
   insertChat(container: HTMLDivElement): void
+  parseSheet(text: string): entry[]
   insertSheetLookup(container: HTMLDivElement): Promise<any>
   insertScript(src: string): void
   vidResize(): void
@@ -48,6 +49,13 @@ interface Container {
     timezone: string
     next: { show: moment.Moment, hide: moment.Moment }
   }
+}
+
+interface entry {
+  key, videoUrl, show, hide, showDate, hideDate, time, WebUrlCheck: string
+}
+interface sheet {
+  lookup: string[], value, id: string, entries: entry[]
 }
 
 export const scheduler: Scheduler = {
@@ -94,10 +102,6 @@ export const scheduler: Scheduler = {
   // updateSheetContainers changes the sheet containers to regular containers,
   // with show and hide dates and times from a google spreadsheet.
   async updateSheetContainers(sheetContainers) {
-    interface sheet {
-      lookup: string[], value: any
-    }
-
     if (sheetContainers.length == 0) return
     let sheets = new Map<string, sheet>()
 
@@ -111,45 +115,52 @@ export const scheduler: Scheduler = {
       let sheet = sheets.get(id) ?? <sheet>{}
       if (!sheet.lookup) sheet.lookup = []
       sheet.lookup.push(lookup)
-      // sheets = sheets.set(id, o)
+      sheet.id = id
       sheets.set(id, sheet)
 
       if (!sheet.value) {
-        const url = `https://spreadsheets.google.com/feeds/list/${id}/od6/public/values?alt=json`
+        const url = `https://docs.google.com/spreadsheets/d/e/${id}/pub?output=csv`
+        // const res = await fetch(url)
         const res = await fetch(url)
-        const json = await res.json()
-        sheet.value = json
+        sheet.value = await res.text()
       }
 
-      const entries = sheet.value.feed.entry
-      const rows = entries.filter((e: any) => e.gsx$key?.$t === lookup)
+      sheet.entries = scheduler.parseSheet(sheet.value)
+
+      const rows = sheet.entries.filter((e: entry) => e.key === lookup)
       if (rows.length === 0) {
         console.error(`key ${lookup} not found in sheet.`)
         return Promise.reject()
       }
       const row = rows[0]
 
-      c.dataset.show = row.gsx$show?.$t ?? ''
-      c.dataset.hide = row.gsx$hide?.$t ?? ''
-      c.dataset.videoUrl = row.gsx$videourl?.$t ?? ''
+      c.dataset.show = row.show ?? ''
+      c.dataset.hide = row.hide ?? ''
+      c.dataset.videoUrl = row.videoUrl ?? ''
       c.dataset.sheetId = ''
       c.dataset.sheetLookup = ''
     }
+  },
 
-    // Loop through the map and request each sheet.
-    // Store the JSON response in the sheets map.
-    // for (let i = 0; i < sheets.keys.length; i++) {
-    //   const url = `https://spreadsheets.google.com/feeds/list/${id}/od6/public/values?alt=json`
-    //   const res = await fetch(url)
-    //   const json = await res.json()
-    //   sheets[i].value = json
-    // }
-    // sheets.forEach(async (sheet, id) => {
-    //   const url = `https://spreadsheets.google.com/feeds/list/${id}/od6/public/values?alt=json`
-    //   const res = await fetch(url)
-    //   const json = await res.json()
-    //   sheet.value = json
-    // })
+  parseSheet(text: string): entry[] {
+    const lines = text.split('\n')
+    let entries: entry[] = []
+
+    for (let l of lines) {
+      const fields = l.split(',')
+      const entry = {
+        key: fields[0],
+        videoUrl: fields[1],
+        show: fields[2],
+        hide: fields[3],
+        showDate: fields[4],
+        hideDate: fields[5],
+        time: fields[6],
+        WebUrlCheck: fields[7],
+      }
+      entries.push(entry)
+    }
+    return entries
   },
 
   // getContainers returns all elements that match the selector.
@@ -186,7 +197,6 @@ export const scheduler: Scheduler = {
       container.schedule.next = sh
       containers.push(container)
     }
-    //TODO: this is a test
     
     if (scheduler.logging) console.log(`containers found: ${containers.length}.`)
     return containers
@@ -528,18 +538,15 @@ export const scheduler: Scheduler = {
 
     const sheetId = container.dataset.sheetId
     const sheetLookup = container.dataset.sheetLookup
-    const url = `https://spreadsheets.google.com/feeds/list/${sheetId}/od6/public/values?alt=json`
-    // const res = await fetch(url)
-    // const data = await res.json()
-    // const entries = data.feed.entry
+    const url = `https://docs.google.com/spreadsheets/d/e/${sheetId}/pub?output=csv`
 
     const p = fetch(url)
-      .then(res => res.json())
-      .then(data => {
-        const entries = data.feed.entry
-        const f = entries.filter((e: any) => e.gsx$key.$t === sheetLookup)
+      .then(res => res.text())
+      .then(text => {
+        const entries = scheduler.parseSheet(text)
+        const f = entries.filter((e: entry) => e.key === sheetLookup)
         if (f.length === 0) return Promise.reject()
-        const src = f[0]?.gsx$link?.$t ?? ''
+        const src = f[0]?.videoUrl ?? ''
         if (src === '') return Promise.reject()
         const template = `<div class="containerVideo"><iframe src=${src}></iframe></div>`
         container.insertAdjacentHTML('afterbegin', template)

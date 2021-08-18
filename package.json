@@ -1,6 +1,6 @@
 {
   "name": "ts-schedule",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "Schedule showing and hiding of DOM elements.",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
