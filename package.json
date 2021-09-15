@@ -1,6 +1,6 @@
 {
   "name": "ts-schedule",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "description": "Schedule showing and hiding of DOM elements.",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -25,7 +25,8 @@
   },
   "homepage": "https://github.com/17xande/ts-schedule#readme",
   "dependencies": {
-    "moment": "^2.29.1"
+    "moment": "^2.29.1",
+    "moment-timezone": "^0.5.33"
   },
   "devDependencies": {
     "@babel/plugin-transform-runtime": "^7.15.0",

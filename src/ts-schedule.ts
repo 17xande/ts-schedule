@@ -1,7 +1,7 @@
 // Author: Alexandre Figueiredo
 // Source: github.com/17xande/ts-schedule
 
-import moment from 'moment'
+import moment from 'moment-timezone'
 
 // Scheduler defines all the functionality of this program.
 interface Scheduler {
@@ -187,7 +187,7 @@ export const scheduler: Scheduler = {
           show: div.dataset.show ?? '',
           hide: div.dataset.hide ?? '',
           showHide: div.dataset.showHide ?? '',
-          timezone: div.dataset.timezone ?? '+02:00', // Default to +02:00 timezone.
+          timezone: div.dataset.timezone ?? 'Africa/Johannesburg', // Default to Africa/Johannesburg timezone.
           next: { show: moment(0), hide: moment(scheduler.endOfTime) }
         },
       }
@@ -204,8 +204,8 @@ export const scheduler: Scheduler = {
 
   // getScheduleType returns the schedule type based on the other properties of the schedule.
   getScheduleType(container) {
-    const showDate = moment(container.schedule.show)
-    const hideDate = moment(container.schedule.hide)
+    const showDate = moment.tz(container.schedule.show, container.schedule.timezone)
+    const hideDate = moment.tz(container.schedule.hide, container.schedule.timezone)
 
     // First we need to figure out what type of date strings we'll be working with.
     if (container.schedule.showHide) {
@@ -234,7 +234,7 @@ export const scheduler: Scheduler = {
 
   // getNextTime gets the next show and hide times.
   getNextTime(container) {
-    const now = moment()
+    const now = moment.tz(container.schedule.timezone)
     const showHide = container.schedule.showHide.split('|')
 
     let ts = now.clone()
@@ -242,14 +242,14 @@ export const scheduler: Scheduler = {
 
     switch (container.schedule.type) {
       case 'onceOff':
-          ts = moment(container.schedule.show)
+          ts = moment.tz(container.schedule.show, container.schedule.timezone)
           
           // Use default value if it's missing or invalid.
           if (!ts.isValid()) {
             ts = moment(0)
           }
         
-          th = moment(container.schedule.hide)
+          th = moment.tz(container.schedule.hide, container.schedule.timezone)
           
           // Use default value if it's missing or invalid.
           if (!th.isValid()) {
@@ -356,15 +356,13 @@ export const scheduler: Scheduler = {
         break
     }
 
-    // Set the timezone/offset.
-    ts.utcOffset(container.schedule.timezone)
-    th.utcOffset(container.schedule.timezone)
     return { show: ts, hide: th}
   },
 
   // getDayDifference returns the length of days till the supplied day.
   getDayDifference(day) {
-    const now = moment()
+    // TODO: dont hard-code this value.
+    const now = moment.tz('Africa/Johannesburg')
     // Get the index of the day in the show attribute.
     let dayIndex = scheduler.days.indexOf(day)
     if (dayIndex === -1) {
@@ -387,6 +385,7 @@ export const scheduler: Scheduler = {
   showHide(container) {
     // Ignore invalid containers.
     if (container.schedule.type === 'invalid') return
+    // TODO: I don't think I need to use the TZ here.
     const now = moment()
 
     if (now.isBetween(container.schedule.next.show, container.schedule.next.hide)) {
@@ -449,6 +448,7 @@ export const scheduler: Scheduler = {
 
   // clockCalc calculates what to set a timer to.
   clockCalc(container) {
+    // TODO: I might need to use .tz() here.
     const now = moment()
     const clockEnd = (container.div.dataset.clockend || "00:00").split(':')
     const endTime = container.schedule.next.hide

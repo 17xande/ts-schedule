@@ -30,6 +30,7 @@ export default {
     //     file: `dist/${pkg.name}.browser.${pkg.version}.js`
     //   },
     // },
+
     knownEntrypoints: [
       '@babel/runtime/helpers/typeof',
       '@babel/runtime/helpers/asyncToGenerator',
@@ -38,6 +39,7 @@ export default {
   },
   devOptions: {
     port: 3000,
+    sourcemap: true,
   },
   buildOptions: {
     out: 'build',
