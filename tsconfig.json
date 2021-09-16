@@ -1,16 +1,27 @@
 {
-  "compileOnSave": true,
+  // tsconfig.json reference: typescriptlang.org/v2/en/tsconfig
+  // "files": ["src/schedule.ts"],
+  // "include": ["src/*", "test/schedule_test.ts"],
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "build"],
   "compilerOptions": {
-    "lib": ["ES2015", "DOM"],
-    // "module":"ES2015",
-    "target": "ES2015",
+    "target": "esnext",
+    "module": "esnext",              
     "moduleResolution": "node",
-    "strict": true,
-    "removeComments": true,
     "sourceMap": true,
-    "outDir": "build"
+    "declaration": true,
+    "declarationDir": "build/types",
+    "outDir": "build",
+    "strict": true,
+    // "watch": true,
+    "baseUrl": ".",
+    // "paths": {
+      //   "moment": ["node_modules/moment/moment"]
+      // },
+      
+    // Linting rules:
+    "removeComments": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
   },
-  "include": [
-    "src/*.ts"
-  ]
 }

@@ -1,7 +1,7 @@
 // Author: Alexandre Figueiredo
 // Source: github.com/17xande/ts-schedule
 
-import * as moment from 'moment-timezone'
+import moment from 'moment-timezone'
 
 // Scheduler defines all the functionality of this program.
 interface Scheduler {
