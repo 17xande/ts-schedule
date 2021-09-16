@@ -8689,4 +8689,4 @@
   window.scheduler = scheduler;
 
 }());
-//# sourceMappingURL=ts-schedule.browser.0.6.2.js.map
+//# sourceMappingURL=ts-schedule.browser.0.7.0.js.map
