@@ -1,7 +1,7 @@
 // Author: Alexandre Figueiredo
 // Source: github.com/17xande/ts-schedule
 
-import moment from 'moment-timezone'
+import * as moment from 'moment-timezone'
 
 // Scheduler defines all the functionality of this program.
 interface Scheduler {
@@ -52,13 +52,20 @@ interface Container {
 }
 
 interface entry {
-  key, videoUrl, show, hide, showDate, hideDate, time, WebUrlCheck: string
+  key: string,
+  videoUrl: string,
+  show: string,
+  hide: string,
+  showDate: string,
+  hideDate: string,
+  time: string,
+  WebUrlCheck: string
 }
 interface sheet {
-  lookup: string[], value, id: string, entries: entry[]
+  lookup: string[], value: string, id: string, entries: entry[]
 }
 
-export const scheduler: Scheduler = {
+const scheduler: Scheduler = {
   endOfTime: moment(32503672800000),
   debug: true,
   logging: true,
