@@ -30,7 +30,7 @@
   },
   "homepage": "https://github.com/17xande/ts-schedule#readme",
   "dependencies": {
-    "moment": "^2.29.1",
+    "moment": "^2.29.2",
     "moment-timezone": "^0.5.33"
   },
   "devDependencies": {
